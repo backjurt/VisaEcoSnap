@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+
+import json
 import os
 import pandas as pd
 import numpy as np
 
 # Changing directory to current working
-#current_directory = os.getcwd()
-working_directory = '/Users/jackburt/OneDrive/Documents/AI/Visa Hackathon/MVP'
+current_directory = os.getcwd()
+working_directory = current_directory
 os.chdir(working_directory)
 
 file_name = 'Visa Climate Tech Data.xlsx'
@@ -19,8 +22,47 @@ sheet_names = excel_data.sheet_names
 card_data_df = pd.read_excel(excel_data, sheet_name='2_Card data')
 open_banking_data_df = pd.read_excel(excel_data, sheet_name='3_Open banking data')
 
-#print(card_data_df.head(10))
-#print(open_banking_data_df.head(10))
+average_spend = card_data_df["spend"].mean()
+
+account_ids = [
+    "94177e7a3daa4ef18746b355980ebd5f",
+    "6r88582adf954cf6b3db6cc97bedccd9",
+    "5a73582adf954cf6b3db6cc97yedood7",
+    "5a73582adf954cf6b3db6cc97tedggd9",
+    "5a73582adf954cf6b3db6cc97bedccd9",
+]
+segments = [
+    "RESTAURANTS",
+    "CHARITABLE/SOC SERVICE ORGS",
+    "PARKING LOTS,METERS,GARAGES",
+    "BARS/TAVERNS/LOUNGES/DISCOS",
+    "LOCAL COMMUTER TRANSPORT",
+]
+mean_segment_spends = {
+    account_id: {
+        segment: open_banking_data_df[(open_banking_data_df["Value.accountId"] == account_id) & (open_banking_data_df["mrch_catg_rlup_nm2"] == segment)]["amount"].mean()
+        for segment in segments
+    }
+    for account_id in account_ids
+}
+sum_segment_spends = {
+    account_id: {
+        segment: open_banking_data_df[(open_banking_data_df["Value.accountId"] == account_id) & (open_banking_data_df["mrch_catg_rlup_nm2"] == segment)]["amount"].sum()
+        for segment in segments
+    }
+    for account_id in account_ids
+}
+count_segment_spends = {
+    account_id: {
+        segment: open_banking_data_df[(open_banking_data_df["Value.accountId"] == account_id) & (open_banking_data_df["mrch_catg_rlup_nm2"] == segment)]["amount"].shape[0]
+        for segment in segments
+    }
+    for account_id in account_ids
+}
+average_segment_transaction = {
+    segment: open_banking_data_df[(open_banking_data_df["mrch_catg_rlup_nm2"] == segment)]["amount"].mean()
+    for segment in segments
+} | { "RETAIL": 28.93756777 }
 
 # Select the column to analyze
 column_name_card = 'mrch_catg_rlup_nm'
